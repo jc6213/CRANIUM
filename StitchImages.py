@@ -15,26 +15,26 @@ import subprocess
 
 # A class for each folder that contains red and green image folders.
 class WellFolder:
-    def __init__(self, folderpath, foldername):
-        self.folderpath = folderpath
-        self.red_dir = folderpath + '/Red'
-        self.green_dir = folderpath + '/Green'
-        self.well = foldername[:3]
-        self.row = foldername[0]
-        self.column = foldername[1:3]
+    def __init__(self, folder):
+        self.folderpath = folder.path
+        self.red_dir = folder.path + '/Red'
+        self.green_dir = folder.path + '/Green'
+        self.well = folder.name[:3]
+        self.row = folder.name[0]
+        self.column = folder.name[1:3]
 
 
-# A function to stitch red and green images for a single well and output to the output folder:
-def makestitches(well):
+# A function to stitch red and green images for a single well folder and output to the shared output folder:
+def makestitches(well_obj):
     # Creating some variables to pass on to the ImageJ macro:
-    red_format = well.row + ' - ' + well.column + '(fld {ii} wv 561 - Orange).tif'
-    registrationfile1 = well.well + 'TileCon.txt'
-    registrationfile2 = well.well + 'TileCon.registered.txt'
+    red_format = well_obj.row + ' - ' + well_obj.column + '(fld {ii} wv 561 - Orange).tif'
+    registrationfile1 = well_obj.well + 'TileCon.txt'
+    registrationfile2 = well_obj.well + 'TileCon.registered.txt'
 
     # Putting together the parts of the first call to stitch the red images:
     initial1 = str('/Applications/Fiji.app/Contents/MacOS/ImageJ-macosx --ij2 '
                    '--headless --run /Users/jessecohn/Desktop/MacroTest.ijm ')
-    passed_vars1 = str(f'\'dir1="{well.red_dir}",FileNames="{red_format}",'
+    passed_vars1 = str(f'\'dir1="{well_obj.red_dir}",FileNames="{red_format}",'
                        f'TileCon="{registrationfile1}",dir2="{output_folder}"\'')
     quiet = str(' >/dev/null 2>&1')
     full_call1 = initial1 + passed_vars1 + quiet
@@ -51,7 +51,8 @@ def makestitches(well):
         file.write(filedata)
 
     # Putting together the parts of the second call to stitch the green images:
-
+    green_format = well_obj.row + '-' + well_obj.column + '(fld {ii} wv 488 - GreenHS.tif'
+    
 
 # Getting arguments from the command line
 parser = argparse.ArgumentParser(description='Takes a folder formatted by WellFolders and makes stitched '
@@ -69,14 +70,12 @@ os.makedirs(output_folder)
 # Making a list of the folders with pics to stitch:
 # First getting all wells folders:
 regex = re.compile(r'^[A-H]\d{2}_Day\d$')
-wanted_folders = [(a.path, a.name) for a in os.scandir(args.folderlocation) if a.is_dir() and regex.match(a.name)]
+wanted_folders = [file for file in os.scandir(args.folderlocation) if file.is_dir() and regex.match(file.name)]
 # Then filtering them if the --wells tag was used
 if args.wells != 'all':
     passed_wells = [m[0] + m[1:].zfill(2) for m in args.wells]
-    wanted_folders = [tup for tup in wanted_folders if tup[1][:3] in passed_wells]
-# Then making a dictionary of each of them as an object
-wells_dict = {folder: WellFolder(*folder) for folder in wanted_folders}
+    wanted_folders = [folder for folder in wanted_folders if folder.name[:3] in passed_wells]
 
 # Calling the stitching command on all the passed folders:
 for well in wanted_folders:
-    makestitches(wells_dict[well])
+    makestitches(WellFolder(well))
