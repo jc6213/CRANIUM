@@ -11,7 +11,8 @@
 # python3 StitchImages.py path/to/topfolder path/to/redmacro path/to/greenmacro --wells A01 A02
 
 # The only thing hard-coded in that may need to be changed is the location of ImageJ
-# (in initial1 and initial2 variables, lines 80 and 103)
+# (in initial1 and initial2 variables, lines 81 and 104), and the default location of your red/green macros
+# if you don't want to have to specify every time.
 
 import argparse
 import os
@@ -36,10 +37,14 @@ parser = argparse.ArgumentParser(description='Takes a folder formatted by WellFo
                                              'red and green images for each well in that folder (or each well '
                                              'specified. (Use the top-level folder, i.e. the one that contains all the '
                                              'well subfolders!)',
-                                 usage='%(prog)s FOLDERPATH REDMACROPATH GREENMACROPATH --wells A01 A02, etc')
+                                 usage='%(prog)s FOLDERPATH --REDMACROPATH --GREENMACROPATH --wells A01 A02, etc')
 parser.add_argument('folderlocation', type=str, help='Absolute path of the folder to modify')
-parser.add_argument('redmacrolocation', type=str, help='Absolute path to the RedStitch.ijm macro')
-parser.add_argument('greenmacrolocation', type=str, help='Absolute path to the GreenStitch.ijm macro')
+parser.add_argument('--redmacrolocation', type=str,
+                    default='/Users/jessecohn/Desktop/PythonScripts/CRANIUM/RedStitch.ijm',
+                    help='Absolute path to the RedStitch.ijm macro')
+parser.add_argument('--greenmacrolocation', type=str,
+                    default='/Users/jessecohn/Desktop/PythonScripts/CRANIUM/GreenStitch.ijm',
+                    help='Absolute path to the GreenStitch.ijm macro')
 parser.add_argument('--wells', type=str, nargs='*', default='all', help='Wells to stitch (does all by default',
                     required=False)
 args = parser.parse_args()
