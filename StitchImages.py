@@ -2,7 +2,7 @@
 # This program takes a folder that has been formatted by the "WellFolders.py" script.
 # This uses two ImageJ/Fiji macros to first stitch together the brightfield images for a well in order to get
 # the correct registration of the tiles, and then it uses that registration to stitch the red and the green channels,
-# outputting the stitched red and green images into a common folder which can be used subsequently 
+# outputting the stitched red and green images into a common folder which can be used subsequently
 # for analysis in CellProfiler.
 
 # Optionally, can also specify if you want only certain wells from the folder stitched, instead of
@@ -12,7 +12,7 @@
 # python3 StitchImages.py path/to/topfolder path/to/firstmacro path/to/secondmacro --wells A01 A02
 
 # The only thing hard-coded in that may need to be changed is the location of ImageJ
-# (in initial1, initial2, and initial 3 variables, lines 88, 111, 125),
+# (in initial1, initial2, and initial 3 variables, lines 89, 112, 126),
 # and the default location of your red/green macros if you don't want to have to specify every time.
 
 import argparse
@@ -39,8 +39,9 @@ parser = argparse.ArgumentParser(description='Takes a folder formatted by WellFo
                                              'red and green images for each well in that folder (or each well '
                                              'specified. (Use the top-level folder, i.e. the one that contains all the '
                                              'well subfolders!)',
-                                 usage='%(prog)s FOLDERPATH REDMACROPATH GREENMACROPATH --wells A01 A02, etc')
+                                 usage='%(prog)s FOLDERPATH DAY REDMACROPATH GREENMACROPATH --wells A01 A02, etc')
 parser.add_argument('folderlocation', type=str, help='Absolute path of the folder to modify')
+parser.add_argument('day', type=int, help='Day of imaging the pictures were taken')
 parser.add_argument('--firstmacrolocation', type=str,
                     default='/Users/jessecohn/Desktop/PythonScripts/CRANIUM/FirstStitch.ijm',
                     help='Absolute path to the FirstStitch.ijm macro')
@@ -53,7 +54,7 @@ args = parser.parse_args()
 
 # Making the shared output folder. If it already exists and some wells have already been stitched,
 # this will make a list of already stitched images in order to avoid doing them again
-output_folder = args.folderlocation + '/Stitched_Images'
+output_folder = args.folderlocation + f'/Stitched_Images_{args.day}'
 existing_well_images = []
 try:
     os.makedirs(output_folder)
